@@ -1,0 +1,23 @@
+# Render blueprint. Create the service with New > Blueprint, then set the two
+# secret env vars in the dashboard. Nothing secret lives in this file.
+services:
+  - type: web
+    name: delivery-assistant-demo
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: prototype
+    buildCommand: npm ci --ignore-scripts && npm run build
+    startCommand: npm start
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: 24.18.0
+      - key: LLM_BASE_URL
+        value: https://api.deepseek.com/v1
+      - key: MODEL
+        value: deepseek-chat
+      - key: LLM_API_KEY
+        sync: false
+      - key: DEMO_PASSCODE
+        sync: false

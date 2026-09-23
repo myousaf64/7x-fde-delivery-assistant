@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Delivery Assistant MVP</title>
+<style>
+  :root{
+    --bg:#f6f7fb; --card:#fff; --ink:#111827; --muted:#5b6472; --line:#dfe3ec;
+    --brand:#00008b; --ok:#047857; --warn:#b45309; --bad:#be123c;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#0b0e14; --card:#131822; --ink:#e8ebf2; --muted:#9aa3b2; --line:#26303f;
+      --brand:#8fa2ff; --ok:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0b0e14; --card:#131822; --ink:#e8ebf2; --muted:#9aa3b2; --line:#26303f;
+    --brand:#8fa2ff; --ok:#34d399; --warn:#fbbf24; --bad:#fb7185;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  nav{position:sticky;top:0;z-index:5;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;
+    padding:.6rem 16px;background:var(--card);border-bottom:1px solid var(--line)}
+  nav b{margin-right:auto;font-size:.95rem}
+  nav button{font:inherit;font-size:.8rem;padding:.35rem .7rem;border:1px solid var(--line);
+    border-radius:99px;background:transparent;color:var(--ink);cursor:pointer}
+  nav button[aria-current="true"]{background:var(--brand);color:#fff;border-color:var(--brand)}
+  main{max-width:1000px;margin:0 auto;padding:16px}
+  section{display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:clamp(16px,3vw,32px);margin-bottom:16px}
+  section.on{display:block}
+  h1{font-size:clamp(1.3rem,3.2vw,1.9rem);margin:.2rem 0 .1rem}
+  h2{font-size:1rem;color:var(--brand);margin:1.4rem 0 .4rem;text-transform:uppercase;letter-spacing:.04em}
+  p.lead{color:var(--muted);margin:.2rem 0 1rem}
+  table{width:100%;border-collapse:collapse;font-size:.85rem;margin:.4rem 0}
+  th,td{text-align:left;padding:.45rem .5rem;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:1rem 0}
+  .kpi{border:1px solid var(--line);border-radius:12px;padding:.8rem}
+  .kpi b{display:block;font-size:1.6rem;line-height:1.1}
+  .kpi span{font-size:.78rem;color:var(--muted)}
+  ul{margin:.3rem 0 .3rem 1.1rem;padding:0}
+  li{margin:.25rem 0}
+  .cols{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .tag{display:inline-block;font-size:.7rem;padding:.1rem .45rem;border-radius:99px;
+    border:1px solid currentColor;margin-right:.3rem}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82em}
+  .flow{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;font-size:.8rem;margin:.6rem 0}
+  .flow div{border:1px solid var(--line);border-radius:8px;padding:.35rem .6rem}
+  .note{font-size:.78rem;color:var(--muted);margin-top:1rem;border-top:1px solid var(--line);padding-top:.6rem}
+  footer{max-width:1000px;margin:0 auto;padding:0 16px 32px;font-size:.75rem;color:var(--muted)}
+  @media print{nav{display:none}section{display:block!important;page-break-after:always}}
+</style>
+</head>
+<body>
+<nav>
+  <b>Delivery assistant · FDE assignment</b>
+  <button data-go="0" aria-current="true">1 Problem</button>
+  <button data-go="1">2 Market</button>
+  <button data-go="2">3 Scope</button>
+  <button data-go="3">4 Prototype</button>
+  <button data-go="4">5 Value</button>
+  <button id="all">Show all</button>
+</nav>
+<main>
+
+<section class="on">
+  <h1>Calls happen where the delivery record fails</h1>
+  <p class="lead">Failed deliveries, address changes and redelivery bookings drive the inbound queue. The provided dataset shows why they also break automation.</p>
+  <div class="kpis">
+    <div class="kpi"><b>17.0%</b><span>of shipments have a failed delivery <em>(measured)</em></span></div>
+    <div class="kpi"><b>22</b><span>spellings of 6 real statuses in 866 raw rows</span></div>
+    <div class="kpi"><b>15.8%</b><span>of records are unsafe to automate at all</span></div>
+    <div class="kpi"><b>84.2%</b><span>of records are clean enough for the agent</span></div>
+  </div>
+  <h2>What the raw export actually contains</h2>
+  <table>
+    <tr><th>Defect</th><th>Count</th><th>Effect on an agent</th></tr>
+    <tr><td>Duplicate tracking numbers that disagree on status</td><td>18</td><td>The agent cannot know the true state</td></tr>
+    <tr><td>Records with no usable phone number</td><td>70</td><td>Identity cannot be verified</td></tr>
+    <tr><td>Junk addresses (<code>asdf</code>, <code>N/A</code>, <code>call me</code>)</td><td>16</td><td>A redelivery would fail again</td></tr>
+    <tr><td>Test and QA records (<code>QA DO NOT SHIP</code>)</td><td>8</td><td>Would be treated as live parcels</td></tr>
+    <tr><td>Date formats in two columns</td><td>7</td><td>Wrong slot, wrong SLA</td></tr>
+    <tr><td>Attempt date before shipment date, delivered with 0 attempts</td><td>33</td><td>The record contradicts itself</td></tr>
+  </table>
+  <p class="note">The framing I take into the build: the model is not the bottleneck. Data trust is. So the first thing the prototype proves is what it refuses to do.</p>
+</section>
+
+<section>
+  <h1>The market already tells you where the ceiling is</h1>
+  <div class="cols">
+    <div>
+      <h2>What works</h2>
+      <ul>
+        <li><b>Aramex</b> (Dubai, WhatsApp, since Oct 2018): "50 percent of shipment inquiries" handled by the bot, 8M+ customers, EN/AR/TR. Same market, same query mix.</li>
+        <li><b>DHL Freight VIVA</b>: "answers 93 percent of inquiries without assistance", but that queue is mostly informational. Germany, Italy, Netherlands in 2026.</li>
+        <li><b>Klarna</b>, month one: 2.3M chats, two-thirds of all chats, 700 agent equivalents, 11 min to under 2 min, 25% fewer repeat inquiries, $40M profit effect.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>What fails</h2>
+      <ul>
+        <li><b>Klarna reversed in May 2025</b>. The CEO: customers must always be able to reach a human. AI-only cut quality.</li>
+        <li><b>Moffatt v. Air Canada</b>, 2024 BCCRT 149: damages of CAD 650.88, and "it makes no difference whether the information comes from a static page or a chatbot". A promised slot is a binding statement.</li>
+        <li><b>DPD</b>, Jan 2024: an AI layer went rogue after "an error occurred after a system update". Scope control beats prompt tuning.</li>
+      </ul>
+    </div>
+  </div>
+  <h2>Buy versus build</h2>
+  <table>
+    <tr><th>Layer</th><th>Call</th><th>Reason</th></tr>
+    <tr><td>Model</td><td class="ok"><b>Buy</b></td><td>Commodity. Keep the endpoint swappable: UAE PDPL restricts cross-border transfer, and the largest independent vendor (Fin, formerly Intercom) is being acquired by Salesforce for ~$3.6bn.</td></tr>
+    <tr><td>Channel platform, WhatsApp, analytics</td><td class="ok"><b>Buy later</b></td><td>Fin publishes $0.99 per outcome. Real price competition. Buy it once containment is proven.</td></tr>
+    <tr><td>Action layer: identity, eligibility, slots, audit</td><td class="bad"><b>Build</b></td><td>It encodes the operator's rules and carries the liability. No vendor knows a COD parcel changing emirate needs a human.</td></tr>
+  </table>
+  <p class="note">Sources: fin.ai pricing page, Salesforce press release 15 Jun 2026, sierra.ai, DHL Freight Connections, GCC Business News (Feb 2022), Klarna press release 27 Feb 2024, CX Dive 9 May 2025, TIME Jan 2024, McCarthy Tétrault, u.ae. Full list in the market scan.</p>
+</section>
+
+<section>
+  <h1>MVP scope, and what I cut on purpose</h1>
+  <div class="cols">
+    <div>
+      <h2>In</h2>
+      <ul>
+        <li>One channel: web chat, English and Arabic, RTL aware</li>
+        <li>Status lookup, reschedule a redelivery, change an address</li>
+        <li>Identity check before any change: tracking number plus the last 4 digits of the phone on the record</li>
+        <li>Eligibility rules in server code, never in the prompt</li>
+        <li>Cleaning step with a generated audit log, 866 rows to 840</li>
+        <li>Operations view: blocked records, reasons, and every change made</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Cut, and why</h2>
+      <ul>
+        <li><b>Voice</b>: ASR error on Arabic dialects and UAE place names doubles the failure surface, proves nothing new</li>
+        <li><b>WhatsApp</b>: right channel in production, but it is Meta template procurement, not engineering risk</li>
+        <li><b>OTP identity</b>: no SMS gateway in a demo. I name the substitute instead of faking it</li>
+        <li><b>Database</b>: in-memory shows the same guardrails</li>
+        <li><b>Refunds, claims, COD collection</b>: money movement needs a human</li>
+        <li><b>Proactive notifications</b>: higher value, but needs a consent and quiet-hours regime</li>
+        <li><b>Fine-tuning</b>: nothing here is a model-capability problem</li>
+      </ul>
+    </div>
+  </div>
+  <h2>The rule that shapes the whole build</h2>
+  <p>The model chooses what to ask. The server decides what is allowed. Every record change passes one gate: verified identity, clean record, eligible status, offered slot. Otherwise it goes to a human with a reason code.</p>
+</section>
+
+<section>
+  <h1>Prototype: the refusals are the product</h1>
+  <div class="flow">
+    <div>customer message</div><div>model picks a tool</div><div><b>server gate</b></div>
+    <div>record change</div><div>audit log</div><div>operations view</div>
+  </div>
+  <h2>Six tools, one gate</h2>
+  <table>
+    <tr><th>Tool</th><th>Guardrail in code</th></tr>
+    <tr><td><code>lookup_shipment</code></td><td>Read only. Returns a masked record: first name, phone as <code>+9715****1224</code></td></tr>
+    <tr><td><code>verify_customer</code></td><td>Last 4 digits of the phone on the record. 3 failed tries, then a human</td></tr>
+    <tr><td><code>get_redelivery_slots</code></td><td>Server-generated windows only, no Friday round</td></tr>
+    <tr><td><code>reschedule_delivery</code></td><td>Verified, unflagged, eligible status, a slot the server offered, under the 3-attempt limit</td></tr>
+    <tr><td><code>update_address</code></td><td>Blocked once out for delivery; a COD parcel leaving its emirate goes to a human; a vague address is refused</td></tr>
+    <tr><td><code>handoff_to_human</code></td><td>Issues a ticket id, always available to the customer</td></tr>
+  </table>
+  <h2>Proven offline, with no model call</h2>
+  <div class="kpis">
+    <div class="kpi"><b>16 / 16</b><span>guardrail checks pass (<code>npm run check</code>)</span></div>
+    <div class="kpi"><b>0</b><span>record changes the model can make on its own</span></div>
+    <div class="kpi"><b>6</b><span>flag types that block automation</span></div>
+    <div class="kpi"><b>EN + AR</b><span>same agent, same rules</span></div>
+  </div>
+  <p class="note">Demo path: reschedule a failed delivery, change an address in Arabic, then watch the agent refuse a COD re-route, a delivered parcel, a 3-attempt parcel and a record with no phone number.</p>
+</section>
+
+<section>
+  <h1>Value case, stated as a range with the assumptions on the table</h1>
+  <p class="lead">Per 100,000 parcels a month. <span class="tag">measured</span> from the dataset, <span class="tag warn">assumed</span> and labeled.</p>
+  <table>
+    <tr><th>Input</th><th>Value</th><th>Basis</th></tr>
+    <tr><td>Shipments with a failed delivery</td><td>17.0%</td><td class="ok">measured</td></tr>
+    <tr><td>Records the agent may touch</td><td>84.2%</td><td class="ok">measured</td></tr>
+    <tr><td>Calls per failed delivery</td><td>0.6</td><td class="warn">assumed</td></tr>
+    <tr><td>Status calls on other parcels</td><td>3% of parcels</td><td class="warn">assumed</td></tr>
+    <tr><td>Inbound contacts per month</td><td>~13,200</td><td>derived</td></tr>
+    <tr><td>Cost per voice contact</td><td>AED 9</td><td class="warn">assumed, replace with the operator's real figure</td></tr>
+    <tr><td>Cost per automated resolution</td><td>AED 0.55 own stack / AED 3.64 bought (Fin $0.99)</td><td class="warn">assumed / published</td></tr>
+  </table>
+  <table>
+    <tr><th>Containment</th><th>Resolved per month</th><th>Saving, own stack</th><th>Saving, bought platform</th></tr>
+    <tr><td>35% pessimistic</td><td>3,893</td><td>AED 32,900</td><td>AED 20,900</td></tr>
+    <tr><td><b>55% base case</b></td><td><b>6,117</b></td><td><b>AED 51,700</b></td><td><b>AED 32,800</b></td></tr>
+    <tr><td>65% optimistic</td><td>7,229</td><td>AED 61,100</td><td>AED 38,700</td></tr>
+  </table>
+  <h2>Kill criteria, set before the pilot starts</h2>
+  <ul>
+    <li>Containment under 25% after two weeks of tuning: stop, and spend the money on the source data instead.</li>
+    <li>Repeat contact within 72 hours above 15%: the resolutions are not real.</li>
+    <li>Any unverified record change: stop the pilot the same day.</li>
+  </ul>
+  <p class="note">What I do not claim: a second-order saving from fewer wasted delivery attempts. It is probably the larger prize, and I have no attempt-cost data to size it. That is a question for the operator, not an estimate for a deck.</p>
+</section>
+
+</main>
+<footer>Figures marked measured come from the provided dataset after cleaning (866 raw rows, 840 usable). Assumptions are labeled and replaceable. Sources for every market figure are listed in the market scan document.</footer>
+<script>
+  const secs=[...document.querySelectorAll('section')], btns=[...document.querySelectorAll('nav [data-go]')];
+  let showAll=false;
+  function go(i){
+    showAll=false;
+    secs.forEach((s,j)=>s.classList.toggle('on',i===j));
+    btns.forEach((b,j)=>b.setAttribute('aria-current',String(i===j)));
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  btns.forEach((b,i)=>b.onclick=()=>go(i));
+  document.getElementById('all').onclick=()=>{
+    showAll=!showAll;
+    secs.forEach(s=>s.classList.toggle('on',showAll));
+    if(!showAll) go(0);
+  };
+  addEventListener('keydown',e=>{
+    const cur=secs.findIndex(s=>s.classList.contains('on'));
+    if(e.key==='ArrowRight'||e.key===' ') go(Math.min(secs.length-1,cur+1));
+    if(e.key==='ArrowLeft') go(Math.max(0,cur-1));
+  });
+</script>
+</body>
+</html>
