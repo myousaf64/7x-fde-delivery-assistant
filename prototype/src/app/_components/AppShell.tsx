@@ -38,7 +38,7 @@ export default function AppShell({
           width={1536}
           height={arabic ? 476 : 617}
           priority
-          className="h-6 w-auto sm:h-7"
+          className="h-7 w-auto shrink-0 sm:h-8"
         />
         <span className="hidden h-5 w-px bg-neutral-200 sm:block" />
         <span className="truncate text-sm font-semibold sm:text-base">Delivery assistant</span>
