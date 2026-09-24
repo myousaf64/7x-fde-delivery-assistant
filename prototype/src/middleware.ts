@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
  * on every page and API route. With no DEMO_PASSCODE set (local development),
  * the gate is off and nothing changes.
  *
- * Username: demo. Password: the value of DEMO_PASSCODE.
+ * Username: blank. Password: the value of DEMO_PASSCODE.
  */
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
