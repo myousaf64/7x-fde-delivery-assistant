@@ -11,7 +11,10 @@ import { NextRequest, NextResponse } from "next/server";
  * Username: blank. Password: the value of DEMO_PASSCODE.
  */
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // Brand artwork and static assets stay open. They carry no customer data, and
+  // keeping them open means the header renders even for a request that has no
+  // credentials yet. Every page and API route stays gated.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.png|emx-latin.jpg|emx-arabic.jpg).*)"],
 };
 
 async function digest(s: string): Promise<string> {
