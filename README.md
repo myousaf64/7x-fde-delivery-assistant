@@ -28,6 +28,10 @@ Swap model provider with two env vars, `LLM_BASE_URL` and `MODEL`. The code spea
 OpenAI-compatible API, so DeepSeek, OpenAI or a UAE-hosted endpoint all work unchanged. That matters
 because of PDPL cross-border rules, see the market scan.
 
+The hosted demo asks for HTTP basic auth whenever `DEMO_PASSCODE` is set. The username is ignored,
+so leave it blank; the password is the passcode set in the Render dashboard. The passcode is never
+stored in this repo. See `DEPLOY.md`.
+
 ## Files
 
 | Path | What it is |
@@ -61,7 +65,7 @@ The refusals matter more than the happy path. Each button on the chat page runs 
 
 - Identity is the last 4 digits of the phone number. Production needs an OTP.
 - State is in memory. A restart resets the dataset.
-- The operations view has no login, because the brief asked for none in the MVP.
+- The hosted demo has a Basic auth gate. Local development has no login unless `DEMO_PASSCODE` is set.
 - Redelivery slots are generated, not real route capacity.
 - "Today" is frozen at 2026-08-21, one day after the last shipment date in the dataset.
 - The address text still reaches the model. Name and phone number do not.

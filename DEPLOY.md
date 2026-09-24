@@ -14,14 +14,22 @@ The blueprint holds no secrets. The two secret values are set in the dashboard.
    | Key | Value |
    |---|---|
    | `LLM_API_KEY` | your DeepSeek key, `sk-...` |
-   | `DEMO_PASSCODE` | any passphrase you choose, for example 5 random words |
+   | `DEMO_PASSCODE` | a passphrase you choose, 5 random words. Never write it in this repo. |
 
 4. **Apply**. First build takes roughly 3 to 5 minutes.
 5. The URL is `https://delivery-assistant-demo.onrender.com`, or whatever suffix Render assigns if
    that name is taken. The dashboard shows the exact URL.
 6. Open it. The browser asks for a username and password:
-   - username: `demo`
-   - password: your `DEMO_PASSCODE`
+   - username: leave it blank, the gate ignores it
+   - password: the `DEMO_PASSCODE` you set in step 3
+
+**The passcode lives only in the Render dashboard.** It never goes in this repo, in a commit, or in
+a screenshot. To change it: Render > the service > Environment > `DEMO_PASSCODE` > Save, which
+redeploys. Generate one with:
+
+```bash
+python3 -c "import secrets;print('-'.join(secrets.choice([w.strip().lower() for w in open('/usr/share/dict/words') if 4<=len(w.strip())<=8 and w.strip().isalpha()]) for _ in range(5)))"
+```
 
 ## What is already set in the blueprint
 
@@ -42,8 +50,8 @@ The blueprint holds no secrets. The two secret values are set in the dashboard.
 unchanged. Static assets are excluded, and they carry no customer data.
 
 This exists because the assignment brief says "Do not distribute". In the submission email, give the
-link and the passcode together, and say in one line that the demo is gated because the dataset is
-confidential. That is a point in your favour, not an obstacle.
+link and the passcode together, and note that the username can stay blank. Say in one line that the
+demo is gated because the dataset is confidential. That is a point in your favour, not an obstacle.
 
 ## Free tier behaviour, worth knowing before the session
 
